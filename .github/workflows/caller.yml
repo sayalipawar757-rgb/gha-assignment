@@ -1,0 +1,26 @@
+name: caller
+
+on:
+  workflow_dispatch:
+
+jobs:
+  qa:
+    uses: ./.github/workflows/reusable.yml
+    with:
+      target_env: qa
+
+  production:
+    needs: qa
+    uses: ./.github/workflows/reusable.yml
+    with:
+      target_env: production
+
+  success:
+    needs:
+      - qa
+      - production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Success message
+        run: echo "QA and production jobs completed successfully"
