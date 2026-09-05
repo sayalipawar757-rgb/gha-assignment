@@ -1,0 +1,32 @@
+name: Conditional Deploy
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+        default: staging
+
+env:
+  APP_NAME: demo-app
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Print target
+        if: ${{ inputs.environment == 'production' }}
+        run: echo "Deploying $APP_NAME to ${{ inputs.environment }}"
+
+      - name: Guarded step
+        if: ${{ env.APP_NAME == 'demo-app' }}
+        run: echo "Guard passed"
+
+      - name: Notify
+        if: ${{ always() }}
+        run: echo "Finished"
