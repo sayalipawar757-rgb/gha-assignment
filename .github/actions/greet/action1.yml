@@ -1,0 +1,30 @@
+name: Greeting Action
+
+description: A simple greeting action
+
+inputs:
+  name:
+    description: Name of the person
+    required: true
+  greeting:
+    description: Greeting message
+    required: false
+    default: Hi
+
+outputs:
+  greeting:
+    description: The greeting message
+
+runs:
+  using: composite
+  steps:
+    - name: Make greeting
+      shell: bash
+      run: |
+        echo "${{ inputs.greeting }}, ${{ inputs.name }}!"
+        echo "message=${{ inputs.greeting }}, ${{ inputs.name }}!" >> $GITHUB_OUTPUT
+
+    - name: Show greeting
+      shell: bash
+      run: |
+        echo "Greeting was created"
