@@ -1,0 +1,44 @@
+name: Release Notes
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        required: true
+        default: "1.0.0"
+
+      release_type:
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: patch
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      build_tag: ${{ steps.build.outputs.build_tag }}
+      build_date: ${{ steps.build.outputs.build_date }}
+
+    steps:
+      - id: build
+        run: |
+          echo "build_tag=v${{ inputs.version }}-${{ inputs.release_type }}-${{ github.run_number }}" >> $GITHUB_OUTPUT
+          echo "build_date=$(date +%Y-%m-%d)" >> $GITHUB_OUTPUT
+
+  announce:
+    needs: prepare
+    runs-on: ubuntu-latest
+
+    steps:
+      - run: |
+          echo "Build tag: ${{ needs.prepare.outputs.build_tag }}"
+          echo "Build date: ${{ needs.prepare.outputs.build_date }}"
+
+      - run: |
+          echo "| Version | Release Type | Build Tag | Build Date |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| ${{ inputs.version }} | ${{ inputs.release_type }} | ${{ needs.prepare.outputs.build_tag }} | ${{ needs.prepare.outputs.build_date }} |" >> $GITHUB_STEP_SUMMARY
