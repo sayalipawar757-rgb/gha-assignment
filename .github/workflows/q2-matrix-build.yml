@@ -1,0 +1,53 @@
+name: Matrix Build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-22.04]
+        node: [18, 20]
+        exclude:
+          - os: ubuntu-22.04
+            node: 18
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - run: node -v
+      - run: npm -v
+
+      - run: |
+          mkdir out
+          echo "OS: ${{ matrix.os }}" > out/report-${{ matrix.os }}-${{ matrix.node }}.txt
+          echo "Node: ${{ matrix.node }}" >> out/report-${{ matrix.os }}-${{ matrix.node }}.txt
+          echo "Run: ${{ github.run_number }}" >> out/report-${{ matrix.os }}-${{ matrix.node }}.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: report-${{ matrix.os }}-${{ matrix.node }}
+          path: out/report-${{ matrix.os }}-${{ matrix.node }}.txt
+
+  collect:
+    needs: build
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: reports
+
+      - run: cat reports/*/*.txt
