@@ -1,20 +1,31 @@
-name: CI
+name: Version Pipeline
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 jobs:
-  build:
+  generate:
+    runs-on: ubuntu-latest
+
+    outputs:
+      version: ${{ steps.make.outputs.version }}
+
+    steps:
+      - name: Make version
+        id: make
+        run: echo "version=1.0.${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
+
+  consume:
+    needs: generate
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Use version
+        run: echo "Version is ${{ needs.generate.outputs.version }}"
 
-      - name: List repository files
-        run: ls -la
-
-      - name: Run the hello script
-        run: bash hello/script.sh
+      - name: Fail if empty
+        run: |
+          if [ -z "${{ needs.generate.outputs.version }}" ]; then
+            echo "Version was empty"
+            exit 1
+          fi
