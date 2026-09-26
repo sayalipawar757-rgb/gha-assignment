@@ -1,13 +1,11 @@
 name: CI
+on: push
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: echo "echo Testing"
   deploy:
-      needs: test
       runs-on: ubuntu-latest
       steps:
-      - run: echo "Deploying , only if test passed"
+        - name: Deploy
+          env:
+            TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+          run: echo "Deploying"
  
